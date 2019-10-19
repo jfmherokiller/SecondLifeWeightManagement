@@ -27,6 +27,10 @@ integer ClockSeconds = 0;
 
 float VisibleFullness = 0;
 
+integer SpecialChannel;
+integer generateChan(key id) {
+    return 0x80000000 | ((integer)("0x"+(string)id) ^ 11);
+}
 string FormatDecimal(float number, integer precision)
 {
     float roundingValue = llPow(10, -precision) * 0.5;
@@ -117,7 +121,8 @@ default
 {
     state_entry()
     {
-        llListen(12356, "", llGetOwner(), "");
+        SpecialChannel = generateChan(llGetOwner());
+        llListen(SpecialChannel, "", "", "");
         llSetTimerEvent(TimeDilation);
     }
     timer()
