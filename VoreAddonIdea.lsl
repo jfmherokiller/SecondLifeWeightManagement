@@ -1,7 +1,7 @@
+
 #define CaloriesOfHuman 81500
-integer generateChan(key id) {
-    return 0x80000000 | ((integer)("0x"+(string)id) ^ 11);
-}
+#include "VoreHeader.lsl"
+
 
 default
 {

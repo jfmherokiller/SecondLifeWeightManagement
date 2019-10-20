@@ -1,3 +1,4 @@
+#include "VoreHeader.lsl"
 
 #define startingWight 40
 #define SecondsInAminute 60
@@ -28,9 +29,7 @@ integer ClockSeconds = 0;
 float VisibleFullness = 0;
 
 integer SpecialChannel;
-integer generateChan(key id) {
-    return 0x80000000 | ((integer)("0x"+(string)id) ^ 11);
-}
+
 string FormatDecimal(float number, integer precision)
 {
     float roundingValue = llPow(10, -precision) * 0.5;
