@@ -54,9 +54,11 @@ DigestAndBurn() {
     if(Weight > startingWight) {
         Weight -= metabolism;
     }
+    //Handle Digestion increases if full of food
     if(VisibleFullness > 100) {
         Digestion += 5;
     }
+    //slowly decrease digestion overtime
     if(VisibleFullness < 100 & Digestion > StartingDigestion) {
         Digestion -= 1;
     }
