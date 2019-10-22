@@ -149,7 +149,7 @@ default
         string Command = llList2String(innerMessage, 0);
         if (Command == "feed") {
             float fedamount = llList2Float(innerMessage, 1);
-            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2));
+            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2) + " g");
             fullness += fedamount;
         }
     }
