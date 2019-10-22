@@ -8,10 +8,11 @@
 #define CaloriesInOneLB 3500
 #define StartingDigestion 5
 #define StartingMetab 1.24
+#define StartingMaxApp 2000;
 //in kg
 float Weight = startingWight;
 // in grams
-float MaxAppitie = 2000;
+float MaxAppitie = StartingMaxApp;
 float fullness = 0;
 //grams per minute
 float Digestion = StartingDigestion;
@@ -22,6 +23,7 @@ float callories = 0;
 //activity user is currently performing
 string Activity;
 integer ActivityNumber = 0;
+
 float TimeDilation = 1.0;
 
 integer ClockSeconds = 0;
@@ -54,13 +56,17 @@ DigestAndBurn() {
     if(Weight > startingWight) {
         Weight -= (metabolism * ActivityNumber);
     }
-    //Handle Digestion increases if full of food
+    //Handle Digestion/appitite increases if full of food
     if(VisibleFullness > 100) {
         Digestion += 5;
+        MaxAppitie += 5;
     }
     //slowly decrease digestion overtime
     if(VisibleFullness < 100 & Digestion > StartingDigestion) {
         Digestion -= 1;
+    }
+    if(VisibleFullness < 100 & MaxAppitie > StartingMaxApp) {
+        MaxAppitie -= 1;
     }
 }
 FasterUpdating() {
