@@ -8,6 +8,17 @@
 #define CaloriesInOneLB 3500
 #define StartingDigestion 5
 #define StartingMetab 1.24
+
+integer Controls = CONTROL_FWD|
+                CONTROL_BACK |
+                CONTROL_LEFT |
+                CONTROL_RIGHT |
+                CONTROL_ROT_LEFT |
+                CONTROL_ROT_RIGHT |
+                CONTROL_UP |
+                CONTROL_DOWN |
+                CONTROL_LBUTTON |
+                CONTROL_ML_LBUTTON;
 //in kg
 float Weight = startingWight;
 // in grams
@@ -123,6 +134,7 @@ default
         SpecialChannel = generateChan(llGetOwner());
         llListen(SpecialChannel, "", "", "");
         llSetTimerEvent(TimeDilation);
+        llRequestPermissions(llGetOwner() ,PERMISSION_OVERRIDE_ANIMATIONS| PERMISSION_TRIGGER_ANIMATION| PERMISSION_TAKE_CONTROLS);
     }
     timer()
     {
