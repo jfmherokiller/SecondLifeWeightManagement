@@ -8,22 +8,10 @@
 #define CaloriesInOneLB 3500
 #define StartingDigestion 5
 #define StartingMetab 1.24
-
-integer Controls = CONTROL_FWD|
-                CONTROL_BACK |
-                CONTROL_LEFT |
-                CONTROL_RIGHT |
-                CONTROL_ROT_LEFT |
-                CONTROL_ROT_RIGHT |
-                CONTROL_UP |
-                CONTROL_DOWN |
-                CONTROL_LBUTTON |
-                CONTROL_ML_LBUTTON;
-#define StartingMaxApp 2000;
 //in kg
 float Weight = startingWight;
 // in grams
-float MaxAppitie = StartingMaxApp;
+float MaxAppitie = 2000;
 float fullness = 0;
 //grams per minute
 float Digestion = StartingDigestion;
@@ -34,7 +22,6 @@ float callories = 0;
 //activity user is currently performing
 string Activity;
 integer ActivityNumber = 0;
-
 float TimeDilation = 1.0;
 
 integer ClockSeconds = 0;
@@ -65,19 +52,15 @@ string MyformattedDec(float Number) {
 }
 DigestAndBurn() {
     if(Weight > startingWight) {
-        Weight -= (metabolism * ActivityNumber);
+        Weight -= metabolism;
     }
-    //Handle Digestion/appitite increases if full of food
+    //Handle Digestion increases if full of food
     if(VisibleFullness > 100) {
         Digestion += 5;
-        MaxAppitie += 5;
     }
     //slowly decrease digestion overtime
     if(VisibleFullness < 100 & Digestion > StartingDigestion) {
         Digestion -= 1;
-    }
-    if(VisibleFullness < 100 & MaxAppitie > StartingMaxApp) {
-        MaxAppitie -= 1;
     }
 }
 FasterUpdating() {
@@ -111,16 +94,16 @@ GetAgentActivity() {
     integer buf = llGetAgentInfo(llGetOwner());
     if ((buf & AGENT_SITTING) || (buf & AGENT_ON_OBJECT)) {
         Activity = "Sitting";
-        ActivityNumber = 1;
+        ActivityNumber = 0;
     } else if (buf & AGENT_WALKING) {
         Activity = "Walking";
-        ActivityNumber = 1.5;
+        ActivityNumber = 1;
     } else if (buf & AGENT_IN_AIR) {
         Activity = "In Air";
         ActivityNumber = 2;
     } else {
         Activity = "Standing";
-        ActivityNumber = 1.1;
+        ActivityNumber = 3;
     }
 }
 PrintVisibleStats()
@@ -142,7 +125,6 @@ default
         SpecialChannel = generateChan(llGetOwner());
         llListen(SpecialChannel, "", "", "");
         llSetTimerEvent(TimeDilation);
-        llRequestPermissions(llGetOwner() ,PERMISSION_OVERRIDE_ANIMATIONS| PERMISSION_TRIGGER_ANIMATION| PERMISSION_TAKE_CONTROLS);
     }
     timer()
     {
@@ -161,7 +143,7 @@ default
         string Command = llList2String(innerMessage, 0);
         if (Command == "feed") {
             float fedamount = llList2Float(innerMessage, 1);
-            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2) + " g");
+            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2));
             fullness += fedamount;
         }
     }
