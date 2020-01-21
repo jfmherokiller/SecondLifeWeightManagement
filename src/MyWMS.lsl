@@ -8,10 +8,26 @@
 #define CaloriesInOneLB 3500
 #define StartingDigestion 5
 #define StartingMetab 1.24
+#define ImmobleWeight 907
+#define StartingMaxApp 2000
+integer IMMOBLE = FALSE;
+integer WeightImpared = FALSE;
+
+integer Controls = CONTROL_FWD|
+                CONTROL_BACK |
+                CONTROL_LEFT |
+                CONTROL_RIGHT |
+                CONTROL_ROT_LEFT |
+                CONTROL_ROT_RIGHT |
+                CONTROL_UP |
+                CONTROL_DOWN |
+                CONTROL_LBUTTON |
+                CONTROL_ML_LBUTTON;
+
 //in kg
 float Weight = startingWight;
 // in grams
-float MaxAppitie = 2000;
+float MaxAppitie = StartingMaxApp;
 float fullness = 0;
 //grams per minute
 float Digestion = StartingDigestion;
@@ -21,7 +37,8 @@ float metabolism = StartingMetab;
 float callories = 0;
 //activity user is currently performing
 string Activity;
-integer ActivityNumber = 0;
+float ActivityNumber = 0;
+
 float TimeDilation = 1.0;
 
 integer ClockSeconds = 0;
@@ -29,7 +46,9 @@ integer ClockSeconds = 0;
 float VisibleFullness = 0;
 
 integer SpecialChannel;
-
+float WeightPecent() {
+    return (Weight/ImmobleWeight);
+}
 string FormatDecimal(float number, integer precision)
 {
     float roundingValue = llPow(10, -precision) * 0.5;
@@ -52,15 +71,19 @@ string MyformattedDec(float Number) {
 }
 DigestAndBurn() {
     if(Weight > startingWight) {
-        Weight -= metabolism;
+        Weight -= (metabolism * ActivityNumber);
     }
-    //Handle Digestion increases if full of food
+    //Handle Digestion/appitite increases if full of food
     if(VisibleFullness > 100) {
         Digestion += 5;
+        MaxAppitie += 5;
     }
     //slowly decrease digestion overtime
     if(VisibleFullness < 100 & Digestion > StartingDigestion) {
         Digestion -= 1;
+    }
+    if(VisibleFullness < 100 & MaxAppitie > StartingMaxApp) {
+        MaxAppitie -= 1;
     }
 }
 FasterUpdating() {
@@ -76,6 +99,33 @@ FasterUpdating() {
 
 }
 UpdateStats() {
+    if(Weight >= 100) {
+        if(!WeightImpared) {
+            WeightImpared = TRUE;
+            llTakeControls(Controls,TRUE, TRUE);
+            llOwnerSay("Your massive belly is starting to make getting around tougher");
+        }
+        if(Weight >= ImmobleWeight) {
+            if(!IMMOBLE) {
+                IMMOBLE = TRUE;
+                llOwnerSay("You have lost the ability to move");
+                llTakeControls(Controls,TRUE, FALSE);
+            }
+        } else {
+            if(IMMOBLE) {
+                llOwnerSay("You have regained the ability to move");
+                IMMOBLE = FALSE;
+                llTakeControls(Controls,TRUE, TRUE);
+            }
+        }
+    } else if( Weight <= 100) {
+        if(WeightImpared || IMMOBLE) {
+            WeightImpared = FALSE;
+            IMMOBLE = FALSE;
+            llTakeControls(Controls,FALSE,FALSE);
+            llOwnerSay("Your weight no longer impedes your travel");
+        }
+    }
     VisibleFullness = (fullness / MaxAppitie) * 100;
     GetAgentActivity();
     if (fullness < 0) {
@@ -94,16 +144,16 @@ GetAgentActivity() {
     integer buf = llGetAgentInfo(llGetOwner());
     if ((buf & AGENT_SITTING) || (buf & AGENT_ON_OBJECT)) {
         Activity = "Sitting";
-        ActivityNumber = 0;
+        ActivityNumber = 1;
     } else if (buf & AGENT_WALKING) {
         Activity = "Walking";
-        ActivityNumber = 1;
+        ActivityNumber = 1.5;
     } else if (buf & AGENT_IN_AIR) {
         Activity = "In Air";
         ActivityNumber = 2;
     } else {
         Activity = "Standing";
-        ActivityNumber = 3;
+        ActivityNumber = 1;
     }
 }
 PrintVisibleStats()
@@ -125,6 +175,7 @@ default
         SpecialChannel = generateChan(llGetOwner());
         llListen(SpecialChannel, "", "", "");
         llSetTimerEvent(TimeDilation);
+        llRequestPermissions(llGetOwner() ,PERMISSION_OVERRIDE_ANIMATIONS| PERMISSION_TRIGGER_ANIMATION| PERMISSION_TAKE_CONTROLS);
     }
     timer()
     {
@@ -143,8 +194,20 @@ default
         string Command = llList2String(innerMessage, 0);
         if (Command == "feed") {
             float fedamount = llList2Float(innerMessage, 1);
-            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2));
+            llOwnerSay("You were fed: " + FormatDecimal(fedamount, 2) + " g");
             fullness += fedamount;
+        }
+    }
+    control( key id, integer level, integer edge )
+    {
+        if(IMMOBLE) return;
+         if(level & CONTROL_FWD)
+        {
+            if(llGetAgentInfo(llGetOwner()) & AGENT_WALKING )  
+
+            { 
+                llApplyImpulse(<-WeightPecent(),0,0>,TRUE);
+            }
         }
     }
 }
